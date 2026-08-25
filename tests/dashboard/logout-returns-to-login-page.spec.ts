@@ -25,7 +25,7 @@ test.describe('User/Profile Menu', () => {
     }
 
     // 2. Open the profile dropdown
-    await page.locator('.oxd-userdropdown-tab').click();
+    await page.getByText('Demo Source').click();
 
     // 3. Click "Logout"
     await page.getByRole('menuitem', { name: 'Logout' }).click();

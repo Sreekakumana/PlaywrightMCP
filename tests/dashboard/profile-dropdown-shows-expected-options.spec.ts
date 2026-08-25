@@ -25,7 +25,7 @@ test.describe('User/Profile Menu', () => {
     }
 
     // 2. Click the profile dropdown in the top-right of the topbar
-    await page.locator('.oxd-userdropdown-tab').click();
+    await page.getByText('Demo Source').click();
 
     // Expected: dropdown menu shows About, Support, Change Password, Logout
     const menu = page.getByRole('menu');
