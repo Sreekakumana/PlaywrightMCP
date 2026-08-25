@@ -16,6 +16,10 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      checks: write
+      pull-requests: write
     steps:
       - uses: actions/checkout@v4
 
@@ -31,6 +35,15 @@ jobs:
 
       - name: Run Playwright tests
         run: npx playwright test
+
+      - name: Publish test report
+        if: always()
+        uses: dorny/test-reporter@v1
+        with:
+          name: Playwright Test Results
+          path: results.xml
+          reporter: java-junit
+          fail-on-error: false
 
       - name: Upload HTML report
         if: always()

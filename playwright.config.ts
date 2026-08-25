@@ -4,7 +4,7 @@ export default defineConfig({
   testDir: '.',
   fullyParallel: true,
   reporter: process.env.CI
-    ? [['list'], ['html', { open: 'never' }]]
+    ? [['list'], ['html', { open: 'never' }], ['junit', { outputFile: 'results.xml' }]]
     : [['html', { open: 'always' }]],
   use: {
     trace: 'on-first-retry',
