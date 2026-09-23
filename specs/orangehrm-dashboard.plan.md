@@ -124,3 +124,24 @@
 - Each numbered scenario (e.g. 1.1, 3.2) should become an independent, runnable test — no test should depend on state left by another.
 - Prefer role/label-based locators (e.g. `getByRole('link', { name: 'PIM' })`) over CSS classes, since OrangeHRM's demo markup can change between releases.
 - Demo data in "Buzz Latest Posts" and "Employees on Leave Today" is not stable — do not assert on specific post content, only widget presence/structure.
+
+---
+
+## Execution Commands
+
+Run from the project root (`C:\Users\sree2\PlaywrightMCP`).
+
+| Purpose | Command |
+|---|---|
+| Run the full dashboard suite | `npx playwright test tests/dashboard --project=chromium` |
+| Run with the browser visible | `npx playwright test tests/dashboard --project=chromium --headed` |
+| Run a single spec | `npx playwright test tests/dashboard/successful-login-redirects-to-dashboard.spec.ts --project=chromium` |
+| Run tests matching a title | `npx playwright test tests/dashboard --project=chromium -g "Logout"` |
+| Step through in Playwright's debugger | `npx playwright test tests/dashboard --project=chromium --debug` |
+| Print results in the terminal only | `npx playwright test tests/dashboard --project=chromium --reporter=list` |
+| Open the last HTML report | `npx playwright show-report` |
+
+**Notes:**
+- Without `--reporter=list`, the HTML report is written to `playwright-report/` and opens when the run finishes.
+- `playwright-report/` holds only the most recent run, so running the API suite afterwards replaces this report.
+- Failed tests are retried up to 2 times (`retries: 2` in `playwright.config.ts`); a trace is recorded on the first retry.

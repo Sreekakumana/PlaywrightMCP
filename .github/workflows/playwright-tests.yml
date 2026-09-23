@@ -1,4 +1,4 @@
-name: Playwright Tests
+name: Dashboard UI Tests
 
 on:
   workflow_dispatch: {}
@@ -34,14 +34,15 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
 
-      - name: Run Playwright tests
-        run: npx playwright test
+      # API tests run separately in api-tests.yml.
+      - name: Run dashboard tests
+        run: npx playwright test tests/dashboard --project=chromium
 
       - name: Publish test report
         if: always()
         uses: dorny/test-reporter@v1
         with:
-          name: Playwright Test Results
+          name: Dashboard Test Results
           path: results.xml
           reporter: java-junit
           fail-on-error: false

@@ -3,6 +3,7 @@
 **API under test:** https://petstore3.swagger.io/api/v3
 **Automated spec:** `tests/api/petstore/pet-crud-lifecycle.spec.ts`
 **Run locally:** `npx playwright test --project=api`
+**Request logging:** `tests/api/helpers/logged-request.ts` (see [Logging & Reporting](#logging--reporting))
 
 ## Assumptions
 - The public Swagger Petstore v3 demo is available. It is shared and stored in memory, so another user touching pet `10001` at the same time can cause failures.
@@ -170,6 +171,38 @@ curl -i https://petstore3.swagger.io/api/v3/pet/not-a-number -H 'Accept: applica
 
 ---
 
+## Logging & Reporting
+
+Every request in the spec is sent through `send(request, method, path, data?)` in `tests/api/helpers/logged-request.ts`. The helper makes the request, records the full exchange and returns the response unchanged, so the checks work exactly as before.
+
+**Captured for every request:**
+- Method and full URL (`--> POST https://petstore3.swagger.io/api/v3/pet`)
+- Request body, formatted as JSON (POST / PUT only)
+- Status code, status text and time taken (`<-- 200 OK (245 ms)`)
+- `Content-Type` response header
+- Response body, formatted when it is JSON, otherwise raw text (e.g. `Pet not found`)
+
+**Where the logs appear:**
+
+| Location | How to view |
+|---|---|
+| HTML report: **Attachments** | `npx playwright show-report`, open a test. Each request is its own attachment, named `<METHOD> <path> -> <status>` (e.g. `GET pet/10001 -> 404`) |
+| HTML report: **stdout** | Same test page, under the test's console output |
+| Terminal | Run with `--reporter=list` to print the logs as tests run |
+
+**Example log (test 1.6):**
+```text
+--> GET https://petstore3.swagger.io/api/v3/pet/10001
+<-- 404 Not Found (247 ms)
+Content-Type: application/json
+Response body:
+Pet not found
+```
+
+**Adding new tests:** call `send()` instead of `request.get/post/put/delete` and the new test gets the same logging automatically.
+
+---
+
 ## Known API Behaviors
 - `POST /pet` returns **200**, not 201.
 - A 404 body is plain text (`Pet not found`) even though the header says `application/json`.
@@ -187,3 +220,23 @@ curl -i https://petstore3.swagger.io/api/v3/pet/not-a-number -H 'Accept: applica
 | 1.6 | GET | `/pet/10001` | Negative | 404 |
 | 1.7 | PUT | `/pet` | Negative | 404 |
 | 2.1 | GET | `/pet/not-a-number` | Negative | 400 |
+
+---
+
+## Execution Commands
+
+Run from the project root (`C:\Users\sree2\PlaywrightMCP`).
+
+| Purpose | Command |
+|---|---|
+| Run the full API suite | `npx playwright test --project=api` |
+| Run the Petstore spec file | `npx playwright test tests/api/petstore/pet-crud-lifecycle.spec.ts --project=api` |
+| Show the request/response logs in the terminal | `npx playwright test --project=api --reporter=list` |
+| Write the HTML report and show terminal logs | `npx playwright test --project=api --reporter=list,html` |
+| Open the last HTML report | `npx playwright show-report` |
+
+**Notes:**
+- The lifecycle tests (1.1–1.7) run in order and depend on each other, so run the whole file rather than a single test. Filtering with `-g` works only for 2.1, which does not depend on the others.
+- Without `--reporter=list`, the HTML report is written to `playwright-report/` and opens when the run finishes.
+- `playwright-report/` holds only the most recent run, so running the dashboard suite afterwards replaces this report.
+- CI: `.github/workflows/api-tests.yml` runs `npx playwright test --project=api` on pushes and pull requests to `main`.
