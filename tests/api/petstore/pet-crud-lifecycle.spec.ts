@@ -1,4 +1,5 @@
 import { test, expect, APIResponse } from '@playwright/test';
+import { send } from '../helpers/logged-request';
 
 // Swagger Petstore v3 — full CRUD lifecycle for a single pet.
 // Steps share state (petId + expected payload) so they must run in order.
@@ -37,14 +38,14 @@ async function expectJson(response: APIResponse, status: number) {
 
 test.describe('Petstore /pet CRUD', () => {
   test('POST /pet creates a pet', async ({ request }) => {
-    const response = await request.post('pet', { data: createdPet });
+    const response = await send(request, 'POST', 'pet', createdPet);
 
     await expectJson(response, 200);
     expect(await response.json()).toEqual(createdPet);
   });
 
   test('GET /pet/{petId} retrieves the created pet', async ({ request }) => {
-    const response = await request.get(`pet/${petId}`);
+    const response = await send(request, 'GET', `pet/${petId}`);
 
     await expectJson(response, 200);
     const body = await response.json();
@@ -55,14 +56,14 @@ test.describe('Petstore /pet CRUD', () => {
   });
 
   test('PUT /pet updates the pet', async ({ request }) => {
-    const response = await request.put('pet', { data: updatedPet });
+    const response = await send(request, 'PUT', 'pet', updatedPet);
 
     await expectJson(response, 200);
     expect(await response.json()).toEqual(updatedPet);
   });
 
   test('GET /pet/{petId} returns the updated values', async ({ request }) => {
-    const response = await request.get(`pet/${petId}`);
+    const response = await send(request, 'GET', `pet/${petId}`);
 
     await expectJson(response, 200);
     const body = await response.json();
@@ -73,14 +74,14 @@ test.describe('Petstore /pet CRUD', () => {
   });
 
   test('DELETE /pet/{petId} deletes the pet', async ({ request }) => {
-    const response = await request.delete(`pet/${petId}`);
+    const response = await send(request, 'DELETE', `pet/${petId}`);
 
     expect(response.status()).toBe(200);
     expect(await response.text()).toBe('Pet deleted');
   });
 
   test('GET /pet/{petId} returns 404 after deletion', async ({ request }) => {
-    const response = await request.get(`pet/${petId}`);
+    const response = await send(request, 'GET', `pet/${petId}`);
 
     // Petstore labels this plain-text body as JSON, so assert on the raw text.
     await expectJson(response, 404);
@@ -88,7 +89,7 @@ test.describe('Petstore /pet CRUD', () => {
   });
 
   test('PUT /pet returns 404 for the deleted pet', async ({ request }) => {
-    const response = await request.put('pet', { data: updatedPet });
+    const response = await send(request, 'PUT', 'pet', updatedPet);
 
     expect(response.status()).toBe(404);
     expect(await response.text()).toBe('Pet not found');
@@ -97,7 +98,7 @@ test.describe('Petstore /pet CRUD', () => {
 
 test.describe('Petstore /pet error responses', () => {
   test('GET /pet/{petId} with a non-numeric id returns 400', async ({ request }) => {
-    const response = await request.get('pet/not-a-number');
+    const response = await send(request, 'GET', 'pet/not-a-number');
 
     await expectJson(response, 400);
     const body = await response.json();
